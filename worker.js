@@ -1,15 +1,11 @@
 'use strict'
 
-const { parentPort, workerData } = require('worker_threads')
-const { id } = workerData
+const { parentPort } = require('worker_threads')
 
 const individualTrack = require('music-routes-data/data/individual_track.json')
 
-const tracks = []
-const individuals = []
-
-tracks[0] = getTracksForIndividual(id)
-individuals[0] = new Set([id])
+let tracks = []
+let individuals = []
 
 parentPort.postMessage({ tracks, individuals })
 parentPort.on('message', (msg) => {
@@ -18,7 +14,10 @@ parentPort.on('message', (msg) => {
     parentPort.postMessage({ tracks, individuals })
     return
   }
-  throw new Error(`Unknown message: ${msg}`)
+
+  // If not 'next' then initializing.
+  tracks = [getTracksForIndividual(msg)]
+  individuals = [new Set([msg])]
 })
 
 function getNextBfsStepResults (tracks, individuals) {

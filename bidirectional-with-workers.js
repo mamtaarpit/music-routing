@@ -16,9 +16,10 @@ const startId = process.argv[2] || '1765' // Aretha Franklin
 const targetId = process.argv[3] || '27' // Carrie Brownstein
 
 function createWorker (id, index) {
-  const worker = new Worker('./worker.js', { workerData: { id } })
+  const worker = new Worker('./worker.js')
   worker.on('error', (err) => { throw err })
   worker.on('message', callback.bind(worker, index))
+  worker.once('online', () => { worker.postMessage(id) })
   return worker
 }
 
