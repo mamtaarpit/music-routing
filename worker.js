@@ -7,17 +7,15 @@ const individualTrack = require('music-routes-data/data/individual_track.json')
 let tracks = []
 let individuals = []
 
-parentPort.postMessage({ tracks, individuals })
 parentPort.on('message', (msg) => {
   if (msg === 'next') {
     getNextBfsStepResults(tracks, individuals)
-    parentPort.postMessage({ tracks, individuals })
-    return
+  } else {
+    // If not 'next' then initializing.
+    tracks = [getTracksForIndividual(msg)]
+    individuals = [new Set([msg])]
   }
-
-  // If not 'next' then initializing.
-  tracks = [getTracksForIndividual(msg)]
-  individuals = [new Set([msg])]
+  parentPort.postMessage({ tracks, individuals })
 })
 
 function getNextBfsStepResults (tracks, individuals) {

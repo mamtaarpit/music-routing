@@ -52,7 +52,7 @@ app.get('/go', function (req, res) {
     const worker = new Worker('./worker.js')
     worker.on('error', (err) => { res.end(`oh noes! ${err}`) })
     worker.on('message', callback.bind(this, index))
-    worker.once('online', () => { worker.postMessage(id) })
+    worker.postMessage(id)
     return worker
   }
 
