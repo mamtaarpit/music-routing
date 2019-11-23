@@ -11,7 +11,7 @@ parentPort.on('message', (msg) => {
   if (msg === 'next') {
     getNextBfsStepResults(tracks, individuals)
   } else {
-    // If not 'next' then initializing.
+    // If not 'next', then initializing.
     tracks = [getTracksForIndividual(msg)]
     individuals = [new Set([msg])]
   }

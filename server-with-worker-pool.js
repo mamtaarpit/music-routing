@@ -6,13 +6,22 @@ const escape = require('escape-html')
 const app = express()
 const fs = require('fs')
 const path = require('path')
-const { Worker } = require('worker_threads')
 
 const individualTrack = require('music-routes-data/data/individual_track.json')
 const allIndividuals = require('music-routes-data/data/individuals.json')
 const allTracks = require('music-routes-data/data/tracks.json')
 
 const indexHtml = fs.readFileSync(path.join(__dirname, 'views', '/index.html'))
+
+const createPool = require('thread-pool-node')
+
+const pool = createPool({
+  workerPath: './worker.js',
+  poolOptions: {
+    min: 4,
+    max: 4
+  }
+})
 
 app.use(function (req, res, next) {
   res.header('Content-Type', 'text/html; charset=utf-8')
@@ -23,7 +32,7 @@ app.get('/', function (req, res) {
   return res.send(indexHtml.toString())
 })
 
-app.get('/go', function (req, res) {
+app.get('/go', async function (req, res) {
   if (!req.query.start || !req.query.end) {
     return res.send('Missing start or end. Please try again.')
   }
@@ -39,22 +48,24 @@ app.get('/go', function (req, res) {
     return res.send(`Could not find <b>${escape(req.query.end)}</b>. Sorry! The data set is limited.`)
   }
 
-  const workers = []
-
   const tracks = [[], []]
   const individuals = [[], []]
 
-  workers[0] = createWorker(start.ref, 0)
-  workers[1] = createWorker(end.ref, 1)
+  const workers = [await pool.acquire(), await pool.acquire()]
 
-  function createWorker (id, index) {
-    const worker = new Worker('./worker.js')
-    worker.on('error', (err) => { res.end(`oh noes! ${err}`) })
-    worker.on('message', callback.bind(this, index))
-    worker.postMessage(id)
-    return worker
+  // TODO: DRY this up? Or at least move to an init() function to match the done() function?
+  const errorListener = (err) => {
+    res.end(`oh noes! ${err}`)
+    // TODO: `pool.destroy(this)` here but let's find a way to test
   }
+  workers[0].on('error', errorListener)
+  workers[1].on('error', errorListener)
 
+  workers[0].on('message', callback.bind(this, 0))
+  workers[1].on('message', callback.bind(this, 1))
+
+  workers[0].postMessage(start.ref)
+  workers[1].postMessage(end.ref)
   let matches
 
   function callback (index, data) {
@@ -69,10 +80,8 @@ app.get('/go', function (req, res) {
   }
 
   function done () {
-    workers[0].removeListener('message', callback)
-    workers[1].removeListener('message', callback)
-    workers[0].terminate()
-    workers[1].terminate()
+    pool.destroy(workers[0])
+    pool.destroy(workers[1])
     printResults()
   }
 
@@ -83,7 +92,6 @@ app.get('/go', function (req, res) {
     const index1 = tracks[1].length - 1
     let fromIndividual = sample(Array.from(individuals[0][index0]).filter((ind) => individualTrack.some((it) => it.individual_id === ind && it.track_id === track)))
     let toIndividual = sample(Array.from(individuals[1][index1]).filter((ind) => individualTrack.some((it) => it.individual_id === ind && it.track_id === track)))
-
     const origToIndividual = toIndividual
 
     const path = [{ track, fromIndividual, toIndividual }]

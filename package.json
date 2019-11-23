@@ -7,7 +7,8 @@
     "escape-html": "^1.0.3",
     "express": "^4.17.1",
     "music-routes-data": "^1.0.3",
-    "music-routes-search": "^2.0.0"
+    "music-routes-search": "^2.0.0",
+    "thread-pool-node": "^1.0.7"
   },
   "engines": {
     "node": "12.x"
@@ -18,7 +19,8 @@
   "scripts": {
     "lint-fix": "standard --fix",
     "test": "standard && node bfs-single-thread.js 1 2 && node bidirectional-single-thread.js && node bidirectional-with-workers.js",
-    "start": "node server.js"
+    "start": "node server-with-worker-pool.js",
+    "start-no-pool": "node server.js"
   },
   "author": "Rich Trott <rtrott@gmail.com>",
   "license": "MIT"
