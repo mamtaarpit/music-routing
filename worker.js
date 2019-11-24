@@ -8,8 +8,8 @@ const individualTrack = require('music-routes-data/data/individual_track.json')
 const tracks = []
 const individuals = []
 
-tracks[0] = getTracksForIndividual(id)
-individuals[0] = new Set([id])
+tracks[0] = getTracksForIndividual(+id)
+individuals[0] = new Set([+id])
 
 parentPort.postMessage({ tracks, individuals })
 parentPort.on('message', (msg) => {
@@ -41,9 +41,9 @@ function getNextBfsStepResults (tracks, individuals) {
 }
 
 function getTracksForIndividual (individualId) {
-  return new Set(individualTrack.filter((val) => val.individual_id === individualId).map((val) => val.track_id))
+  return new Set(individualTrack.filter((val) => +val.individual_id === individualId).map((val) => +val.track_id))
 }
 
 function getIndividualsForTrack (trackId) {
-  return new Set(individualTrack.filter((val) => val.track_id === trackId).map((val) => val.individual_id))
+  return new Set(individualTrack.filter((val) => +val.track_id === trackId).map((val) => +val.individual_id))
 }

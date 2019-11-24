@@ -80,34 +80,34 @@ app.get('/go', function (req, res) {
     let track = sample(matches)
     const index0 = tracks[0].length - 1
     const index1 = tracks[1].length - 1
-    let fromIndividual = sample(Array.from(individuals[0][index0]).filter((ind) => individualTrack.some((it) => it.individual_id === ind && it.track_id === track)))
-    let toIndividual = sample(Array.from(individuals[1][index1]).filter((ind) => individualTrack.some((it) => it.individual_id === ind && it.track_id === track)))
+    let fromIndividual = sample(Array.from(individuals[0][index0]).filter((ind) => individualTrack.some((it) => +it.individual_id === ind && +it.track_id === track)))
+    let toIndividual = sample(Array.from(individuals[1][index1]).filter((ind) => individualTrack.some((it) => +it.individual_id === ind && +it.track_id === track)))
 
     const origToIndividual = toIndividual
 
     const path = [{ track, fromIndividual, toIndividual }]
 
     for (let i = index0 - 1; i >= 0; i--) {
-      track = sample(Array.from(tracks[0][i]).filter((trk) => individualTrack.some((it) => it.track_id === trk && it.individual_id === fromIndividual)))
+      track = sample(Array.from(tracks[0][i]).filter((trk) => individualTrack.some((it) => +it.track_id === trk && +it.individual_id === fromIndividual)))
       toIndividual = fromIndividual
-      fromIndividual = sample(Array.from(individuals[0][i]).filter((ind) => ind._id !== toIndividual && individualTrack.some((it) => it.individual_id === ind && it.track_id === track)))
+      fromIndividual = sample(Array.from(individuals[0][i]).filter((ind) => ind._id !== toIndividual && individualTrack.some((it) => +it.individual_id === ind && +it.track_id === track)))
       path.unshift({ track, fromIndividual, toIndividual })
     }
 
     toIndividual = origToIndividual
 
     for (let i = index1 - 1; i >= 0; i--) {
-      track = sample(Array.from(tracks[1][i]).filter((trk) => individualTrack.some((it) => it.track_id === trk && it.individual_id === toIndividual)))
+      track = sample(Array.from(tracks[1][i]).filter((trk) => individualTrack.some((it) => +it.track_id === trk && +it.individual_id === toIndividual)))
       fromIndividual = toIndividual
-      toIndividual = sample(Array.from(individuals[1][i]).filter((ind) => ind._id !== fromIndividual && individualTrack.some((it) => it.individual_id === ind && it.track_id === track)))
+      toIndividual = sample(Array.from(individuals[1][i]).filter((ind) => ind._id !== fromIndividual && individualTrack.some((it) => +it.individual_id === ind && +it.track_id === track)))
       path.push({ track, fromIndividual, toIndividual })
     }
 
     // Print the list of track names and individuals
     path.forEach((node) => {
-      const from = allIndividuals.find((ind) => ind._id === node.fromIndividual).names[0]
-      const track = allTracks.find((trk) => trk._id === node.track).names[0]
-      const to = allIndividuals.find((ind) => ind._id === node.toIndividual).names[0]
+      const from = allIndividuals.find((ind) => +ind._id === node.fromIndividual).names[0]
+      const track = allTracks.find((trk) => +trk._id === node.track).names[0]
+      const to = allIndividuals.find((ind) => +ind._id === node.toIndividual).names[0]
       res.write(`<b>${escape(from)}</b> played on "${escape(track)}" with <b>${escape(to)}</b><br>\n`)
     })
     res.end()
