@@ -11,11 +11,11 @@ const individuals = []
 tracks[0] = getTracksForIndividual(+id)
 individuals[0] = new Set([+id])
 
-parentPort.postMessage({ tracks, individuals })
+parentPort.postMessage({ tracks: tracks[0], individuals: individuals[0] })
 parentPort.on('message', (msg) => {
   if (msg === 'next') {
     getNextBfsStepResults(tracks, individuals)
-    parentPort.postMessage({ tracks, individuals })
+    parentPort.postMessage({ tracks: tracks[tracks.length - 1], individuals: individuals[individuals.length - 1] })
     return
   }
   throw new Error(`Unknown message: ${msg}`)

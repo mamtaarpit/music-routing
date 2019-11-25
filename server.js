@@ -58,8 +58,8 @@ app.get('/go', function (req, res) {
   let matches
 
   function callback (index, data) {
-    tracks[index] = data.tracks
-    individuals[index] = data.individuals
+    tracks[index].push(data.tracks)
+    individuals[index].push(data.individuals)
     matches = matchFound(tracks[0], tracks[1])
     if (matches.length) {
       done()
